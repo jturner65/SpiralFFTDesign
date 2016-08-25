@@ -2,7 +2,9 @@ package SpiralFFTDesPKG;
 
 import processing.core.*; 
 
-import java.util.*; 
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.awt.event.KeyEvent;
 
 public class FFTSpiralDsn extends PApplet {
@@ -21,6 +23,8 @@ public class FFTSpiralDsn extends PApplet {
 			useDrawnTraj = false,			//use drawn trajectory to determine path 
 			useDrawnVels = false;
 	
+	public ExecutorService th_exec;
+	public int numThreadsAvail;	
 
 	//JT drawn trajectory, using drawing speed to infer velocities
 	public Boolean drawing = false;		//for drawn trajectory
@@ -80,6 +84,9 @@ public class FFTSpiralDsn extends PApplet {
 
 		useFFT = true;
 		//point array holding the main spiral's points for display and endpoints for matching pattern - use this so that points are not re-calculated every frame, only when verts A,B,C are moved
+		numThreadsAvail = Runtime.getRuntime().availableProcessors();
+		System.out.println("# threads : "+ numThreadsAvail);
+		th_exec = Executors.newCachedThreadPool();
 
 		mainSpiral = new pt[0];
 		spiralEndPts = new pt[0];
@@ -97,6 +104,7 @@ public class FFTSpiralDsn extends PApplet {
 		//animStep = .3f/fRate;			//gives .01 for 30 frames per sec
 		pathBetweenEdges = new pt[0];
 	}
+
 
 	//**************************** display current frame ****************************
 	public void draw() {      // executed at each frame
@@ -140,7 +148,8 @@ public class FFTSpiralDsn extends PApplet {
 			}
 		popStyle();popMatrix();
 		if(useFFT){
-			if (frameCount % 4 == 1) {				
+			if (frameCount % 4 == 1) {
+				//th_exec.execute(fft);
 				screenShot = get( fftx, ffty,fftw,ffth);
 				screenShot.loadPixels();	
 				double[] pxls = new double[fft.pxlAraSize];
@@ -156,9 +165,9 @@ public class FFTSpiralDsn extends PApplet {
 				//scribeHeader("max val : "+max(screenShot.pixels)+"| minVal : "+min(screenShot.pixels),6);
 				fft.fftTrans(pxls, fftw, ffth);
 			}
-			scribeHeader("disp pxls max val : "+fft.maxDispVals+"| minVal : "+fft.minDispVals,4);
-			scribeHeader("calc val pxls max val : "+fft.max2ByteVals+"| minVal : "+fft.min2ByteVals,5);
-			scribeHeader("disp pxls max val : "+PApplet.max(fft.dispImage.pixels)+"| minVal : "+PApplet.min(fft.dispImage.pixels),3);
+//			scribeHeader("disp pxls max val : "+fft.maxDispVals+"| minVal : "+fft.minDispVals,4);
+//			scribeHeader("calc val pxls max val : "+fft.max2ByteVals+"| minVal : "+fft.min2ByteVals,5);
+//			scribeHeader("disp pxls max val : "+PApplet.max(fft.dispImage.pixels)+"| minVal : "+PApplet.min(fft.dispImage.pixels),3);
 			fft.drawFFT(0, (int)(this.height*.3f),  (int)(this.width*.3f), (int)(templateZoneY),fft.dispImage);
 		}
 		if(snapPic) {endRecord(); snapPic=false;} // end saving a .pdf of the screen

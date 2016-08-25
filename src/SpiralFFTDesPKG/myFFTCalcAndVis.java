@@ -9,7 +9,7 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
 //process and visualize fft of screen to use as tool 
-public class myFFTCalcAndVis {
+public class myFFTCalcAndVis implements Runnable {
 	public static FFTSpiralDsn pa;
 	
 	public Complex[] fftRes;
@@ -98,4 +98,25 @@ public class myFFTCalcAndVis {
 			
 		pa.popStyle();pa.popMatrix();	
 	}
+	
+	@Override
+	public void run() {
+		pa.screenShot = pa.get( pa.fftx, pa.ffty,pa.fftw,pa.ffth);
+		pa.screenShot.loadPixels();	
+		double[] pxls = new double[pxlAraSize];
+		//int diffIdx = (fft.pxlAraSize - screenShot.pixels.length)/2;		//center screenshot pxls
+//		for(int i =0; i<screenShot.pixels.length; ++i){
+//			pxls[i] = (screenShot.pixels[i] >> 16 & 0xFFFF)/65536.0f;
+//		}
+	
+		for(int i =0; i<pa.screenShot.pixels.length; ++i){
+			//pxls[diffIdx++] =-1* (screenShot.pixels[i] & 0x00FFFFFF);///256.0f;
+			pxls[i] =-1* (pa.screenShot.pixels[i] & 0x00FFFFFF);///256.0f;
+		}
+		//scribeHeader("max val : "+max(screenShot.pixels)+"| minVal : "+min(screenShot.pixels),6);
+		fftTrans(pxls, pa.fftw, pa.ffth);
+		// TODO Auto-generated method stub
+
+	}
+
 }
